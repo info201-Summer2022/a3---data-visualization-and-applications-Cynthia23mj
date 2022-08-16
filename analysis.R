@@ -4,6 +4,7 @@ library(dplyr)
 library(usmap)
 library(plotly)
 library(ggplot2)
+library(patchwork)
 
 incarceration_df <- read.csv("https://raw.githubusercontent.com/vera-institute/incarceration-trends/master/incarceration_trends.csv")
 census_df <- read.csv("Census.csv")
@@ -17,9 +18,11 @@ combo_df <- merge(combo_df, region_df, by = "Name", all.x = TRUE)
 
 filter_df <- combo_df
 
-plot_ly(data = incarceration_df, x = ~state, y = ~total_pop, color = ~county_name, text = ~state)
+p <- plot_ly(data = incarceration_df, x = ~state, y = ~total_pop, color = ~county_name, text = ~state)
+p
 
-ggplot(data = incarceration_df, aes(x = state, y = total_pop)) + geom_point(aes(col=county_name))
+g <- ggplot(data = incarceration_df, aes(x = state, y = total_pop)) + geom_point(aes(col=county_name))
+g
 
 #  An introduction of the problem domain and a description of the variable(s) you are choosing to analyze (and why!)
 #A paragraph of summary information, citing at least 5 values calculated from the data

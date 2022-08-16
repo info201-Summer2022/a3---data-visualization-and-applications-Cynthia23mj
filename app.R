@@ -3,7 +3,7 @@ library(ggplot2)
 library(plotly)
 library(shiny)
 
-source(analysis.R)
+source("analysis.R")
 
 # set up ui
 ui <- fluidPage(
