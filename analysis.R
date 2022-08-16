@@ -5,7 +5,21 @@ library(usmap)
 library(plotly)
 library(ggplot2)
 
-df <- read.csv("characters.csv")
+incarceration_df <- read.csv("https://raw.githubusercontent.com/vera-institute/incarceration-trends/master/incarceration_trends.csv")
+census_df <- read.csv("Census.csv")
+region_df <- read.csv("USAregions.csv")
+
+# cleaning and merging datasets from lecture 7/8
+#incarceration_df <- filter(incarceration_df, !is.na(incarceration_df$yr_mean))
+incarceration_df <- select(incarceration_df, state, year, county_name, total_pop)
+combo_df <- merge(census_df, incarceration_df, by.x = "Name", by.y = "state", all.x = TRUE)
+combo_df <- merge(combo_df, region_df, by = "Name", all.x = TRUE)
+
+filter_df <- combo_df
+
+plot_ly(data = incarceration_df, x = ~state, y = ~total_pop, color = ~county_name, text = ~state)
+
+ggplot(data = incarceration_df, aes(x = state, y = total_pop)) + geom_point(aes(col=county_name))
 
 #  An introduction of the problem domain and a description of the variable(s) you are choosing to analyze (and why!)
 #A paragraph of summary information, citing at least 5 values calculated from the data
