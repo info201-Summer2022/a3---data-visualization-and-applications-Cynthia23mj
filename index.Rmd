@@ -17,15 +17,38 @@ library(patchwork)
 #This code chunk allows us to source the code from analysis
 source("analysis.R", local = knitr::knit_global())
 ```
+Below is a summary of all the information from the datasets that will be used
+
+## Summary
 
 ```{r, echo = FALSE, message = FALSE}
 #summary information
 summary_info
+```
+
+## Bar Chart
+
+```{r, echo = FALSE, message = FALSE}
 #bar chart visual
 plot(barchart)
+```
+
+Shows a bar chart of total jail population throughout the years of Urban Cities (side by side).
+
+## Scatter Plot
+
+```{r, echo = FALSE, message = FALSE}
 #scatter plot visual
 plot(scatterplot)
+```
+
+Shows a scatter plot of jail populations across each region and shows larger jail population in Northeast
+
+## Map
+
+```{r, echo = FALSE, message = FALSE}
 #map visual
 plot(map)
 ```
 
+Blue and red map of non black and non white populations in jail. Red is the high and blue is the low, so in most states there is a low number of other races in jail compared to the rest.
