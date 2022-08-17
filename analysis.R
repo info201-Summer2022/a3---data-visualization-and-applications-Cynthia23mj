@@ -1,73 +1,100 @@
 #Cynthia Cisneros
 
+# libraries
 library(dplyr)
+library(hrbrthemes)
 library(usmap)
 library(plotly)
 library(ggplot2)
 library(patchwork)
 
+# incarceration dataframe from github
 incarceration_df <- read.csv("https://raw.githubusercontent.com/vera-institute/incarceration-trends/master/incarceration_trends.csv")
-census_df <- read.csv("Census.csv")
-region_df <- read.csv("USAregions.csv")
 
-# cleaning and merging datasets from lecture 7/8
-#incarceration_df <- filter(incarceration_df, !is.na(incarceration_df$yr_mean))
-incarceration_df <- select(incarceration_df, state, year, county_name, total_pop)
-combo_df <- merge(census_df, incarceration_df, by.x = "Name", by.y = "state", all.x = TRUE)
-combo_df <- merge(combo_df, region_df, by = "Name", all.x = TRUE)
+#Summary Information, cleaning and filtering
+summary_info <- list()
+summary_info$num_variable <- ncol(incarceration_df)
+summary_info$division_data <- incarceration_df %>%
+  distinct(division) %>%
+  select(division)
+summary_info$state_data <- incarceration_df %>%
+  distinct(state) %>%
+  select(state)
+summary_info$region_data <- incarceration_df %>%
+  distinct(region) %>%
+  select(region)
+summary_info$avg_total_jail_pop <- mean(incarceration_df$total_jail_pop, na.rm = TRUE)
+summary_info$max_total_jail_pop_2018 <- incarceration_df %>%
+  filter(year == max(year, na.rm = TRUE)) %>%
+  filter(total_jail_pop == max(total_jail_pop, na.rm = TRUE)) %>%
+  pull(total_jail_pop)
+summary_info$max_white_jail_pop <- max(incarceration_df$white_jail_pop, na.rm = TRUE)
+summary_info$min_white_jail_pop <- min(incarceration_df$white_jail_pop, na.rm = TRUE)
+summary_info$max_black_jail_pop <- max(incarceration_df$black_jail_pop, na.rm = TRUE)
+summary_info$min_black_jail_pop <- min(incarceration_df$black_jail_pop, na.rm = TRUE)
+summary_info$diff_black_white_jail_pop <- summary_info$max_black_jail_pop - summary_info$max_white_jail_pop
+summary_info$max_state_other_race_jail_pop <- incarceration_df %>%
+  filter(state == max(state, na.rm = TRUE)) %>%
+  filter(other_race_jail_pop == max(other_race_jail_pop, na.rm = TRUE)) %>%
+  distinct(other_race_jail_pop) %>%
+  pull(other_race_jail_pop)
+summary_info$min_state_other_race_jail_pop <- incarceration_df %>%
+  filter(state == min(state, na.rm = TRUE)) %>%
+  filter(other_race_jail_pop == max(other_race_jail_pop, na.rm = TRUE)) %>%
+  distinct(other_race_jail_pop) %>%
+  pull(other_race_jail_pop)
 
-filter_df <- combo_df
+# selects specific columns in data to get cities
+urbanicity_jail <- na.omit(incarceration_df) %>%
+  select(urbanicity, total_jail_pop, year)
 
-p <- plot_ly(data = incarceration_df, x = ~state, y = ~total_pop, color = ~county_name, text = ~state)
-p
+# creates bar chart of jail populations
+barchart <- urbanicity_jail %>%
+  ggplot(aes(fill = urbanicity, y = total_jail_pop, x = year)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(fill = "Urban Cities") +
+  scale_fill_discrete(labels = c("Rural", "Small", "Suburban", "Urban")) +
+  ylab("Jail Population") +
+  xlab("Years") +
+  ggtitle("Total Jail Population across Cities") + 
+  theme(plot.title = element_text(face = "bold", size = 16, hjust = 0.5)) +
+  theme(axis.title.x.bottom = element_text(face = "bold")) +
+  theme(axis.title.y.left = element_text(face = "bold"))
+barchart
 
-g <- ggplot(data = incarceration_df, aes(x = state, y = total_pop)) + geom_point(aes(col=county_name))
-g
+# selects white/black jail pop in regions
+black_white_jail_pop_region <- na.omit(incarceration_df) %>%
+  select(white_jail_pop, black_jail_pop, region)
 
-#  An introduction of the problem domain and a description of the variable(s) you are choosing to analyze (and why!)
-#A paragraph of summary information, citing at least 5 values calculated from the data
-#A chart that shows trends over time for a variable of your choice
-#A chart that compares two variables to one another
-#A map that shows how your measure of interest varies geographically
-#See below for additional information for each component. 
+# creates scatterplot for data above
+scatterplot <- ggplot(black_white_jail_pop_region , aes(x = white_jail_pop, y = black_jail_pop, color=region)) + 
+  geom_point(size=4) +
+  labs(color = "Regions") +
+  xlab("White") +
+  ylab("Black") +
+  ggtitle("Jail Population Across Regions") +
+  theme(plot.title = element_text(face = "bold", size = 16, hjust = 0.5)) +
+  theme(axis.title.x.bottom = element_text(face = "bold")) +
+  theme(axis.title.y.left = element_text(face = "bold")) 
+theme_ipsum() 
+scatterplot
 
-#Introduction + Summary Information
-#As you introduce your report and the dataset, you should describe the variables that you've chosen to analyze. In doing so, make clear which measure(s) of incarceration you are focusing on. 
+# selects state and other populations in jail
+other_race_jail_pop_state <- na.omit(incarceration_df) %>%
+  select(state, other_race_jail_pop)
 
-#Then, you will share at least 5 relevant values of interest. These will likely be calculated using your DPLYR skills, answering questions such as: 
-
-#What is the average value of my variable across all the counties (in the current year)?
-#Where is my variable the highest / lowest?
-#How much has my variable change over the last N years?
-#Feel free to calculate and report values that you find relevant. Again, remember that the purpose is to think about how these measure of incarceration vary by race. 
-
-#Trends over time chart
-
-#The first chart that you'll create and include will show the trend over time of your variable/topic. Think carefully about what you want to communicate to your user (you may have to find relevant trends in the dataset first!). Here are some requirements to help guide your design:
-  
-#  Show more than one, but fewer than ~10 lines: your graph should compare the trend of your measure over time. This may mean showing the same measure for different locations, or different racial groups. Think carefully about a meaningful comparison of locations (e.g., the top 10 counties in a state, top 10 states, etc.)
-#You must have clear x and y axis labels,
-#The chart needs a clear title 
-#You need a legend for your different line colors, and a clear legend title
-#In your .Rmd file, make sure to describe why you included the chart, and what patterns emerged
-#When I say "clear" or "human readable" titles and labels, that means that you should not just display the variable name.
-
-#Variable comparison chart
-
-#The second chart that you'll create and include will show how two different (continuous) variables are related to one another. Again, think carefully about what such a comparison means, and want to communicate to your user (you may have to find relevant trends in the dataset first!). Here are some requirements to help guide your design:
-
-#You must have clear x and y axis labels,
-#The chart needs a clear title 
-#If you choose to add a color encoding (not required), you need a legend for your different color and a clear legend title
-#In your .Rmd file, make sure to describe why you included the chart, and what patterns emerged
-#Map
-
-#The last chart that you'll create and include will show how a variable is distributed geographically. Again, think carefully about what such a comparison means, and want to communicate to your user (you may have to find relevant trends in the dataset first!). Here are some requirements to help guide your design:
-  
-#  Your map needs a title
-#Your color scale needs a legend with a clear label
-#Use a map based coordinate system to set the aspect ratio of your map (see reading)
-#Use a minimalist theme for the map (see reading)
-#In your .Rmd file, make sure to describe why you included the chart, and what patterns emerged
-
-
+# creates the US map with the data above
+map <- plot_usmap(data = other_race_jail_pop_state, values = "other_race_jail_pop", labels = FALSE) +
+  scale_fill_continuous(
+    low = "blue", high = "red", name = "Jail Population of Non-Black or White", label = scales::comma
+  ) + 
+  theme_linedraw() +
+  xlab("Longitude") +
+  ylab("Latitude") +
+  theme(legend.position = "right") +
+  labs(title = "Non-Black or White Jail Population") +
+  theme(plot.title = element_text(face = "bold", size = 16, hjust = 0.5)) +
+  theme(legend.background = element_rect(fill="white",
+                                         size=0.5, linetype ="solid", 
+                                         colour ="black"))
+map

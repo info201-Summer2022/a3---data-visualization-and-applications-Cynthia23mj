@@ -19,21 +19,13 @@ source("analysis.R", local = knitr::knit_global())
 ```
 
 ```{r, echo = FALSE, message = FALSE}
-#CHART
-p
-g
+#summary information
+summary_info
+#bar chart visual
+plot(barchart)
+#scatter plot visual
+plot(scatterplot)
+#map visual
+plot(map)
 ```
 
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
